@@ -30,23 +30,32 @@ pub fn part2(input: &str) -> String {
         .lines()
         .fold((0, DIAL_START_POSITION), |(zeros, dial_position), line| {
             let number: i32 = line.chars().skip(1).collect::<String>().parse().unwrap();
+
+            let full_spins = number / MODULO_DIAL;
+            let mut zeroes_encountered = full_spins;
+
             let mut new_dial_position = dial_position;
             if line.chars().nth(0).unwrap() == 'L' {
                 new_dial_position -= number;
+                new_dial_position %= MODULO_DIAL;
+
+                if dial_position != 0 && new_dial_position > dial_position {
+                    zeroes_encountered += 1;
+                }
             } else {
                 new_dial_position += number;
+                new_dial_position %= MODULO_DIAL;
+
+                if dial_position != 0 && new_dial_position < dial_position {
+                    zeroes_encountered += 1;
+                }
             }
 
-            let count_position = if new_dial_position < 0 {
-                new_dial_position.abs() + 98
-            } else {
-                new_dial_position
-            };
+            if new_dial_position == 0 {
+                zeroes_encountered += 1
+            }
 
-            (
-                zeros + count_position / MODULO_DIAL,
-                new_dial_position % MODULO_DIAL,
-            )
+            (zeroes_encountered + zeros, new_dial_position)
         })
         .0
         .to_string()
