@@ -28,35 +28,36 @@ pub fn part1(input: &str) -> String {
 pub fn part2(input: &str) -> String {
     input
         .lines()
-        .fold((0, DIAL_START_POSITION), |(zeros, dial_position), line| {
-            let number: i32 = line.chars().skip(1).collect::<String>().parse().unwrap();
+        .fold(
+            (0, DIAL_START_POSITION),
+            |(zeros, current_dial_position), line| {
+                let spin_amount: i32 = line.chars().skip(1).collect::<String>().parse().unwrap();
 
-            let full_spins = number / MODULO_DIAL;
-            let mut zeroes_encountered = full_spins;
+                let full_spins = spin_amount / MODULO_DIAL;
 
-            let mut new_dial_position = dial_position;
-            if line.chars().nth(0).unwrap() == 'L' {
-                new_dial_position -= number;
-                new_dial_position %= MODULO_DIAL;
+                if line.chars().nth(0).unwrap() == 'L' {
+                    let new_dial_position =
+                        (current_dial_position - spin_amount).rem_euclid(MODULO_DIAL);
 
-                if dial_position != 0 && new_dial_position > dial_position {
-                    zeroes_encountered += 1;
+                    if current_dial_position != 0
+                        && (new_dial_position > current_dial_position || new_dial_position == 0)
+                    {
+                        (zeros + full_spins + 1, new_dial_position)
+                    } else {
+                        (zeros + full_spins, new_dial_position)
+                    }
+                } else {
+                    let new_dial_position =
+                        (current_dial_position + spin_amount).rem_euclid(MODULO_DIAL);
+
+                    if new_dial_position < current_dial_position {
+                        (zeros + full_spins + 1, new_dial_position)
+                    } else {
+                        (zeros + full_spins, new_dial_position)
+                    }
                 }
-            } else {
-                new_dial_position += number;
-                new_dial_position %= MODULO_DIAL;
-
-                if dial_position != 0 && new_dial_position < dial_position {
-                    zeroes_encountered += 1;
-                }
-            }
-
-            if new_dial_position == 0 {
-                zeroes_encountered += 1
-            }
-
-            (zeroes_encountered + zeros, new_dial_position)
-        })
+            },
+        )
         .0
         .to_string()
 }
